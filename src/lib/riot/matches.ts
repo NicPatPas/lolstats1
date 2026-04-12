@@ -65,6 +65,43 @@ export function processMatch(match: Match, puuid: string): ProcessedMatch {
     (s) => s.description === 'subStyle',
   )
 
+  // Pre-compute team kill totals for kill participation
+  const teamKills: Record<number, number> = {}
+  for (const p of match.info.participants) {
+    teamKills[p.teamId] = (teamKills[p.teamId] ?? 0) + p.kills
+  }
+
+  // Full participant data — extracted once, reused for both the summary list and expanded detail
+  const detailParticipants = match.info.participants.map((p) => {
+    const pPrimary = p.perks?.styles?.find((s) => s.description === 'primaryStyle')
+    const pSub = p.perks?.styles?.find((s) => s.description === 'subStyle')
+    return {
+      puuid: p.puuid,
+      gameName: p.riotIdGameName || p.summonerName,
+      tagLine: p.riotIdTagline,
+      championName: p.championName,
+      championId: p.championId,
+      champLevel: p.champLevel,
+      teamId: p.teamId,
+      teamPosition: p.teamPosition || p.individualPosition || '',
+      kills: p.kills,
+      deaths: p.deaths,
+      assists: p.assists,
+      items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
+      summoner1Id: p.summoner1Id,
+      summoner2Id: p.summoner2Id,
+      primaryRuneId: pPrimary?.selections?.[0]?.perk ?? 0,
+      secondaryRuneStyle: pSub?.style ?? 0,
+      totalMinionsKilled: p.totalMinionsKilled,
+      neutralMinionsKilled: p.neutralMinionsKilled,
+      goldEarned: p.goldEarned,
+      visionScore: p.visionScore,
+      totalDamageDealtToChampions: p.totalDamageDealtToChampions,
+      totalDamageTaken: p.totalDamageTaken,
+      win: p.win,
+    }
+  })
+
   return {
     matchId: match.metadata.matchId,
     gameCreation: match.info.gameCreation,
@@ -97,13 +134,15 @@ export function processMatch(match: Match, puuid: string): ProcessedMatch {
     goldEarned: participant.goldEarned,
     visionScore: participant.visionScore,
     teamId: participant.teamId,
-    participants: match.info.participants.map((p) => ({
+    participants: detailParticipants.map((p) => ({
       puuid: p.puuid,
-      gameName: p.riotIdGameName || p.summonerName,
-      tagLine: p.riotIdTagline,
+      gameName: p.gameName,
+      tagLine: p.tagLine,
       championName: p.championName,
       teamId: p.teamId,
     })),
+    detailParticipants,
+    teamKills,
   }
 }
 

@@ -249,6 +249,33 @@ export interface PlayerProfile {
   rankedData: LeagueEntry[]
 }
 
+// Full per-player stats used in match detail expansion
+export interface ProcessedParticipant {
+  puuid: string
+  gameName: string
+  tagLine: string
+  championName: string
+  championId: number
+  champLevel: number
+  teamId: number
+  teamPosition: string
+  kills: number
+  deaths: number
+  assists: number
+  items: number[]
+  summoner1Id: number
+  summoner2Id: number
+  primaryRuneId: number
+  secondaryRuneStyle: number
+  totalMinionsKilled: number
+  neutralMinionsKilled: number
+  goldEarned: number
+  visionScore: number
+  totalDamageDealtToChampions: number
+  totalDamageTaken: number
+  win: boolean
+}
+
 export interface ProcessedMatch {
   matchId: string
   gameCreation: number
@@ -273,6 +300,7 @@ export interface ProcessedMatch {
   goldEarned: number
   visionScore: number
   teamId: number
+  // Lightweight summary used in match card participant list
   participants: {
     puuid: string
     gameName: string
@@ -280,6 +308,10 @@ export interface ProcessedMatch {
     championName: string
     teamId: number
   }[]
+  // Full participant data for match detail expansion (no extra API call needed)
+  detailParticipants: ProcessedParticipant[]
+  // Pre-computed team kill totals for kill participation
+  teamKills: Record<number, number>
 }
 
 export interface FilterState {

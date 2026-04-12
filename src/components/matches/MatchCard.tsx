@@ -1,6 +1,11 @@
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
-import { cn, formatKDA, formatDuration, timeAgo, formatNumber } from '@/lib/utils'
+import { ChevronDown } from 'lucide-react'
+import { cn, formatKDA, formatDuration, timeAgo } from '@/lib/utils'
 import { ddragon } from '@/lib/ddragon'
+import { MatchDetailPanel } from './MatchDetailPanel'
 import type { ProcessedMatch } from '@/types/riot'
 
 interface MatchCardProps {
@@ -10,6 +15,8 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, puuid, region }: MatchCardProps) {
+  const [expanded, setExpanded] = useState(false)
+
   const isWin = match.win
   const kda = formatKDA(match.kills, match.deaths, match.assists)
   const cs = match.totalMinionsKilled + match.neutralMinionsKilled
@@ -21,10 +28,11 @@ export function MatchCard({ match, puuid, region }: MatchCardProps) {
   return (
     <div
       className={cn(
-        'group relative flex flex-col gap-0 overflow-hidden rounded-xl border transition-colors',
+        'relative overflow-hidden rounded-xl border transition-colors',
         isWin
-          ? 'border-[#1E3A2F] bg-[#0B1F18] hover:border-[#2A5040]'
-          : 'border-[#3A1E1E] bg-[#1F0B0B] hover:border-[#502A2A]',
+          ? 'border-[#1E3A2F] bg-[#0B1F18]'
+          : 'border-[#3A1E1E] bg-[#1F0B0B]',
+        expanded && (isWin ? 'border-[#2A5040]' : 'border-[#502A2A]'),
       )}
     >
       {/* Win/Loss accent bar */}
@@ -35,7 +43,15 @@ export function MatchCard({ match, puuid, region }: MatchCardProps) {
         )}
       />
 
-      <div className="flex items-center gap-3 py-3 pl-4 pr-4 sm:gap-4 sm:pl-5">
+      {/* Clickable summary row */}
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className={cn(
+          'flex w-full cursor-pointer items-center gap-3 py-3 pl-4 pr-3 text-left transition-colors sm:gap-4 sm:pl-5',
+          isWin ? 'hover:bg-[#3D9A6A]/5' : 'hover:bg-[#C45252]/5',
+        )}
+        aria-expanded={expanded}
+      >
         {/* Result + Queue + Time */}
         <div className="flex w-16 shrink-0 flex-col items-start gap-0.5">
           <span
@@ -61,19 +77,16 @@ export function MatchCard({ match, puuid, region }: MatchCardProps) {
               className="object-cover"
               unoptimized
             />
-            {/* Champ level badge */}
             <div className="absolute bottom-0 right-0 rounded-tl-md bg-black/80 px-1 text-[9px] font-bold text-white">
               {match.champLevel}
             </div>
           </div>
 
-          {/* Summoner spells */}
           <div className="flex flex-col gap-0.5">
             <SpellIcon spellId={match.summoner1Id} size={20} />
             <SpellIcon spellId={match.summoner2Id} size={20} />
           </div>
 
-          {/* Rune */}
           <div className="flex flex-col gap-0.5">
             <RuneIcon runeId={match.primaryRuneId} size={20} />
             <div className="h-5 w-5 rounded overflow-hidden bg-[#1A2840] border border-[#1E2D42]" />
@@ -111,31 +124,63 @@ export function MatchCard({ match, puuid, region }: MatchCardProps) {
         </div>
 
         {/* Participants mini */}
-        <div className="hidden lg:flex flex-col gap-1 ml-auto">
+        <div className="hidden lg:flex flex-col gap-1">
           <div className="flex flex-wrap gap-x-2 gap-y-0.5">
             {allies.slice(0, 4).map((p, i) => (
-              <a
+              <span
                 key={i}
-                href={`/player/${region}/${encodeURIComponent(p.gameName)}/${encodeURIComponent(p.tagLine)}`}
-                className="flex items-center gap-1 text-xs text-[#6B7A8E] hover:text-[#8899AA] transition-colors"
+                onClick={(e) => e.stopPropagation()}
+                className="contents"
               >
-                <ParticipantChampIcon championName={p.championName} size={14} />
-                <span className="max-w-[60px] truncate">{p.gameName}</span>
-              </a>
+                <a
+                  href={`/player/${region}/${encodeURIComponent(p.gameName)}/${encodeURIComponent(p.tagLine)}`}
+                  className="flex items-center gap-1 text-xs text-[#6B7A8E] hover:text-[#8899AA] transition-colors"
+                >
+                  <ParticipantChampIcon championName={p.championName} size={14} />
+                  <span className="max-w-[60px] truncate">{p.gameName}</span>
+                </a>
+              </span>
             ))}
           </div>
           <div className="flex flex-wrap gap-x-2 gap-y-0.5">
             {enemies.slice(0, 4).map((p, i) => (
-              <a
+              <span
                 key={i}
-                href={`/player/${region}/${encodeURIComponent(p.gameName)}/${encodeURIComponent(p.tagLine)}`}
-                className="flex items-center gap-1 text-xs text-[#6B7A8E] hover:text-[#8899AA] transition-colors"
+                onClick={(e) => e.stopPropagation()}
+                className="contents"
               >
-                <ParticipantChampIcon championName={p.championName} size={14} />
-                <span className="max-w-[60px] truncate">{p.gameName}</span>
-              </a>
+                <a
+                  href={`/player/${region}/${encodeURIComponent(p.gameName)}/${encodeURIComponent(p.tagLine)}`}
+                  className="flex items-center gap-1 text-xs text-[#6B7A8E] hover:text-[#8899AA] transition-colors"
+                >
+                  <ParticipantChampIcon championName={p.championName} size={14} />
+                  <span className="max-w-[60px] truncate">{p.gameName}</span>
+                </a>
+              </span>
             ))}
           </div>
+        </div>
+
+        {/* Expand chevron */}
+        <div className="ml-auto shrink-0 pl-2">
+          <ChevronDown
+            className={cn(
+              'h-4 w-4 text-[#4A6080] transition-transform duration-200',
+              expanded && 'rotate-180',
+            )}
+          />
+        </div>
+      </button>
+
+      {/* Expandable detail panel — smooth CSS grid animation */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-300 ease-in-out',
+          expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+        )}
+      >
+        <div className="overflow-hidden">
+          <MatchDetailPanel match={match} viewerPuuid={puuid} region={region} />
         </div>
       </div>
     </div>
@@ -152,7 +197,7 @@ function ItemIcon({ itemId, isTrinket = false }: { itemId: number; isTrinket?: b
       )}
     >
       {src && (
-        <Image src={src} alt={`Item ${itemId}`} fill className="object-cover" unoptimized />
+        <Image src={src} alt="" fill className="object-cover" unoptimized />
       )}
     </div>
   )
@@ -166,7 +211,7 @@ function SpellIcon({ spellId, size }: { spellId: number; size: number }) {
       style={{ width: size, height: size }}
     >
       {src && (
-        <Image src={src} alt={`Spell ${spellId}`} width={size} height={size} unoptimized />
+        <Image src={src} alt="" width={size} height={size} unoptimized />
       )}
     </div>
   )
@@ -180,7 +225,7 @@ function RuneIcon({ runeId, size }: { runeId: number; size: number }) {
       style={{ width: size, height: size }}
     >
       {src && (
-        <Image src={src} alt={`Rune ${runeId}`} width={size} height={size} unoptimized />
+        <Image src={src} alt="" width={size} height={size} unoptimized />
       )}
     </div>
   )
@@ -188,10 +233,7 @@ function RuneIcon({ runeId, size }: { runeId: number; size: number }) {
 
 function ParticipantChampIcon({ championName, size }: { championName: string; size: number }) {
   return (
-    <div
-      className="overflow-hidden rounded-sm"
-      style={{ width: size, height: size }}
-    >
+    <div className="overflow-hidden rounded-sm" style={{ width: size, height: size }}>
       <Image
         src={ddragon.championSquare(championName)}
         alt={championName}

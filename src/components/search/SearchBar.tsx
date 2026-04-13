@@ -2,21 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronDown } from 'lucide-react'
+import { Search, ArrowRight } from 'lucide-react'
 import { REGIONS } from '@/lib/riot/regions'
 import { buildProfileUrl } from '@/lib/utils'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { ChevronDown } from 'lucide-react'
 
 export function SearchBar() {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [region, setRegion] = useState('NA')
+  const [region, setRegion] = useState('EUW')
   const [error, setError] = useState('')
 
   function handleSearch(e: React.FormEvent) {
@@ -24,86 +18,81 @@ export function SearchBar() {
     setError('')
 
     const trimmed = query.trim()
-    if (!trimmed) {
-      setError('Enter a Summoner name')
-      return
-    }
+    if (!trimmed) { setError('Enter a Summoner name'); return }
 
     const hashIndex = trimmed.lastIndexOf('#')
-    if (hashIndex === -1) {
-      setError('Include your tag: GameName#TAG')
-      return
-    }
+    if (hashIndex === -1) { setError('Include your tag — e.g. Faker#KR1'); return }
 
     const gameName = trimmed.slice(0, hashIndex).trim()
-    const tagLine = trimmed.slice(hashIndex + 1).trim()
+    const tagLine  = trimmed.slice(hashIndex + 1).trim()
 
-    if (!gameName) {
-      setError('Game name cannot be empty')
-      return
-    }
-    if (!tagLine) {
-      setError('Tag cannot be empty')
-      return
-    }
+    if (!gameName) { setError('Game name cannot be empty'); return }
+    if (!tagLine)  { setError('Tag cannot be empty'); return }
 
     router.push(buildProfileUrl(region, gameName, tagLine))
   }
 
   return (
-    <div className="w-full max-w-2xl">
-      <form onSubmit={handleSearch} className="flex flex-col gap-3">
-        <div className="flex overflow-hidden rounded-xl border border-[#1E2D42] bg-[#0F1724] shadow-2xl shadow-black/50 focus-within:border-[#4E9AF5] transition-colors">
-          {/* Region selector */}
-          <Select value={region} onValueChange={(v) => v && setRegion(v)}>
-            <SelectTrigger className="w-[90px] shrink-0 rounded-none border-0 border-r border-[#1E2D42] bg-transparent px-3 text-sm font-medium text-[#8899AA] focus:ring-0">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="border-[#1E2D42] bg-[#0F1724]">
+    <div className="w-full">
+      <form onSubmit={handleSearch} role="search" aria-label="Search for a League of Legends player">
+        <div
+          className={`flex overflow-hidden rounded-2xl border bg-[#0C1220] shadow-2xl shadow-black/60 transition-colors duration-200 focus-within:border-[#4E9AF5]/60 ${error ? 'border-[#F87171]/50' : 'border-[#1A2840]'}`}
+        >
+          {/* Region */}
+          <div className="relative flex shrink-0 items-stretch border-r border-[#1A2840]">
+            <select
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              aria-label="Select region"
+              className="h-full w-[86px] appearance-none bg-transparent pl-3 pr-7 font-display text-sm font-semibold text-[#8BA4BE] outline-none cursor-pointer"
+            >
               {REGIONS.map((r) => (
-                <SelectItem
-                  key={r.id}
-                  value={r.id}
-                  className="text-white focus:bg-[#1A2840] focus:text-white"
-                >
+                <option key={r.id} value={r.id} className="bg-[#0C1220] text-white">
                   {r.label}
-                </SelectItem>
+                </option>
               ))}
-            </SelectContent>
-          </Select>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#435669]" aria-hidden="true" />
+          </div>
 
           {/* Input */}
           <div className="relative flex flex-1 items-center">
-            <Search className="absolute left-4 h-5 w-5 text-[#4A6080]" />
+            <Search className="absolute left-4 h-4 w-4 text-[#435669]" aria-hidden="true" />
             <input
-              type="text"
+              type="search"
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value)
-                if (error) setError('')
-              }}
+              onChange={(e) => { setQuery(e.target.value); if (error) setError('') }}
               placeholder="GameName#TAG"
               autoFocus
-              className="w-full bg-transparent py-4 pl-12 pr-4 text-base text-white placeholder-[#4A6080] outline-none"
+              autoComplete="off"
+              spellCheck={false}
+              aria-label="Summoner name and tag"
+              aria-describedby={error ? 'search-error' : undefined}
+              className="w-full bg-transparent py-4 pl-11 pr-4 text-base text-white placeholder-[#435669] outline-none"
             />
           </div>
 
-          {/* Search button */}
+          {/* Submit */}
           <button
             type="submit"
-            className="shrink-0 bg-[#4E9AF5] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#3D87E0] active:bg-[#2E74CD]"
+            aria-label="Search"
+            className="flex shrink-0 items-center gap-2 bg-[#4E9AF5] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#3D87E0] active:bg-[#2E74CD] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/60"
           >
-            Search
+            <span className="hidden sm:inline">Search</span>
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-400 px-1">{error}</p>
+          <p id="search-error" role="alert" aria-live="polite" className="mt-2.5 px-1 text-sm text-[#F87171]">
+            {error}
+          </p>
         )}
       </form>
 
-      <p className="mt-3 text-sm text-[#4A6080]">
-        Search by Riot ID — e.g. <span className="text-[#8899AA]">Faker#KR1</span>
+      <p className="mt-3 text-center text-xs text-[#435669]">
+        Search by Riot&nbsp;ID&nbsp;—&nbsp;e.g.{' '}
+        <span className="font-medium text-[#8BA4BE]">Faker#KR1</span>
       </p>
     </div>
   )

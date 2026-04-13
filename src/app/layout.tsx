@@ -1,16 +1,20 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Chakra_Petch, Outfit } from 'next/font/google'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import './globals.css'
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const chakraPetch = Chakra_Petch({
+  variable: '--font-display',
   subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const outfit = Outfit({
+  variable: '--font-body',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -23,6 +27,10 @@ export const metadata: Metadata = {
   keywords: ['league of legends', 'lol stats', 'op.gg', 'summoner stats', 'match history'],
 }
 
+export const viewport: Viewport = {
+  themeColor: '#070B13',
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark`}
+      className={`${chakraPetch.variable} ${outfit.variable} dark`}
+      style={{ colorScheme: 'dark' }}
     >
-      <body className="min-h-screen bg-[#0A0F1A] text-[#E8EEF6] antialiased">
+      <head>
+        <link rel="preconnect" href="https://ddragon.leagueoflegends.com" />
+      </head>
+      <body className="min-h-screen bg-[#070B13] font-body text-[#EEF4FF] antialiased">
         <TooltipProvider delay={300}>{children}</TooltipProvider>
       </body>
     </html>

@@ -25,7 +25,7 @@ export function MatchDetailPanel({ match, viewerPuuid, region }: MatchDetailPane
   const redWin = redTeam[0]?.win ?? false
 
   return (
-    <div className="border-t border-[#1E2D42] bg-[#080D16] px-4 py-4 sm:px-5">
+    <div className="border-t border-[#1E2D42] bg-[#070B13] px-4 py-4 sm:px-5">
       <div className="flex flex-col gap-5">
         {/* Blue Team */}
         <TeamSection
@@ -84,20 +84,18 @@ function TeamSection({
       {/* Team header */}
       <div className="flex items-center gap-2 mb-1">
         <span
-          className={cn(
-            'text-xs font-bold uppercase tracking-wider',
-            isWin ? 'text-[#3D9A6A]' : 'text-[#C45252]',
-          )}
+          className="text-xs font-bold uppercase tracking-wider"
+          style={{ color: isWin ? 'var(--win)' : 'var(--loss)' }}
+          aria-label={`${teamName} — ${isWin ? 'Victory' : 'Defeat'}`}
         >
           {teamName}
         </span>
         <span
-          className={cn(
-            'rounded px-1.5 py-0.5 text-[10px] font-semibold',
-            isWin
-              ? 'bg-[#3D9A6A]/15 text-[#3D9A6A]'
-              : 'bg-[#C45252]/15 text-[#C45252]',
-          )}
+          className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+          style={{
+            color: isWin ? 'var(--win)' : 'var(--loss)',
+            background: isWin ? 'color-mix(in srgb, var(--win) 12%, transparent)' : 'color-mix(in srgb, var(--loss) 12%, transparent)',
+          }}
         >
           {isWin ? 'Victory' : 'Defeat'}
         </span>
@@ -193,25 +191,22 @@ function PlayerRow({ participant: p, isViewer, region, maxDamage, teamKills }: P
 
       {/* KDA */}
       <div className="flex w-[115px] shrink-0 flex-col items-center gap-0.5">
-        <span className="text-xs font-bold text-white">
-          <span className="text-[#4E9AF5]">{p.kills}</span>
-          <span className="text-[#4A6080]">/</span>
-          <span className="text-[#C45252]">{p.deaths}</span>
-          <span className="text-[#4A6080]">/</span>
-          <span className="text-[#3D9A6A]">{p.assists}</span>
+        <span className="font-display text-xs font-bold text-white nums">
+          <span className="text-[#60A5FA]">{p.kills}</span>
+          <span className="text-[#4A6080]"> / </span>
+          <span style={{ color: 'var(--loss)' }}>{p.deaths}</span>
+          <span className="text-[#4A6080]"> / </span>
+          <span style={{ color: 'var(--win)' }}>{p.assists}</span>
         </span>
         <div className="flex items-center gap-1.5">
           <span
-            className={cn(
-              'text-[10px] font-medium',
-              kda === 'Perfect' ? 'text-[#C89B3C]' : 'text-[#4A6080]',
-            )}
+            className={cn('text-[10px] font-medium nums', kda === 'Perfect' ? 'text-[var(--gold)]' : 'text-[#4A6080]')}
           >
             {kda === 'Perfect' ? 'Perfect' : `${kda}`}
           </span>
           <span className="text-[10px] text-[#2A3D56]">·</span>
-          <span className="text-[10px] text-[#4A6080]">
-            KP <span className="text-[#8899AA]">{kp}%</span>
+          <span className="text-[10px] text-[#4A6080] nums">
+            KP <span className="text-[#8BA4BE]">{kp}%</span>
           </span>
         </div>
       </div>
@@ -220,27 +215,27 @@ function PlayerRow({ participant: p, isViewer, region, maxDamage, teamKills }: P
       <div className="flex w-[125px] shrink-0 flex-col gap-1">
         <div className="flex items-center justify-between">
           <span className="text-[10px] text-[#4A6080]">DMG</span>
-          <span className="text-[10px] font-medium text-[#8899AA]">
+          <span className="text-[10px] font-medium text-[#8BA4BE] nums">
             {formatNumber(p.totalDamageDealtToChampions)}
           </span>
         </div>
-        <div className="h-1 w-full overflow-hidden rounded-full bg-[#1A2840]">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-[#162032]" role="meter" aria-valuenow={Math.round(damagePercent)} aria-valuemin={0} aria-valuemax={100} aria-label="Damage dealt relative to team maximum">
           <div
-            className="h-full rounded-full bg-[#C45252]"
-            style={{ width: `${damagePercent}%` }}
+            className="h-full rounded-full"
+            style={{ width: `${damagePercent}%`, background: 'var(--loss)' }}
           />
         </div>
       </div>
 
       {/* CS */}
       <div className="flex w-[40px] shrink-0 flex-col items-center">
-        <span className="text-xs font-medium text-[#C8D6E5]">{cs}</span>
+        <span className="font-display text-xs font-medium text-[#C8D6E5] nums">{cs}</span>
         <span className="text-[10px] text-[#4A6080]">CS</span>
       </div>
 
       {/* Gold */}
       <div className="flex w-[44px] shrink-0 flex-col items-center">
-        <span className="text-xs font-medium text-[#C89B3C]">
+        <span className="font-display text-xs font-medium nums" style={{ color: 'var(--gold)' }}>
           {formatNumber(p.goldEarned)}
         </span>
         <span className="text-[10px] text-[#4A6080]">Gold</span>
@@ -248,7 +243,7 @@ function PlayerRow({ participant: p, isViewer, region, maxDamage, teamKills }: P
 
       {/* Vision */}
       <div className="flex w-[36px] shrink-0 flex-col items-center">
-        <span className="text-xs font-medium text-[#C8D6E5]">{p.visionScore}</span>
+        <span className="font-display text-xs font-medium text-[#C8D6E5] nums">{p.visionScore}</span>
         <span className="text-[10px] text-[#4A6080]">VS</span>
       </div>
 
@@ -268,7 +263,7 @@ function MiniItemIcon({ itemId, isTrinket = false }: { itemId: number; isTrinket
   return (
     <div
       className={cn(
-        'relative h-6 w-6 shrink-0 overflow-hidden border border-[#1E2D42] bg-[#080D16]',
+        'relative h-6 w-6 shrink-0 overflow-hidden border border-[#1E2D42] bg-[#0C1220]',
         isTrinket ? 'rounded-full' : 'rounded',
       )}
     >
@@ -282,7 +277,7 @@ function MiniItemIcon({ itemId, isTrinket = false }: { itemId: number; isTrinket
 function MiniSpellIcon({ spellId }: { spellId: number }) {
   const src = ddragon.summonerSpell(spellId)
   return (
-    <div className="h-[14px] w-[14px] overflow-hidden rounded border border-[#1E2D42] bg-[#080D16]">
+    <div className="h-[14px] w-[14px] overflow-hidden rounded border border-[#1E2D42] bg-[#0C1220]">
       {src && <Image src={src} alt="" width={14} height={14} unoptimized />}
     </div>
   )

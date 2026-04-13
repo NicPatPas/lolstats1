@@ -8,6 +8,7 @@ import { RiotAPIError } from '@/lib/riot/client'
 import { Header } from '@/components/layout/Header'
 import { ProfileHeader } from '@/components/profile/ProfileHeader'
 import { RankedCard, NoRankedCard } from '@/components/profile/RankedCard'
+import { ChampionStats } from '@/components/profile/ChampionStats'
 import { MatchHistory } from '@/components/matches/MatchHistory'
 import { ErrorState } from '@/components/common/ErrorState'
 import type { PlayerProfile } from '@/types/riot'
@@ -124,6 +125,11 @@ export default async function PlayerPage({
                         <RankedCard key={entry.queueType} entry={entry} />
                       ))}
                   </>
+                )}
+
+                {/* Champion performance summary */}
+                {(result.matches?.length ?? 0) > 0 && (
+                  <ChampionStats matches={result.matches!} />
                 )}
               </aside>
 
